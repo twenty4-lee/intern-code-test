@@ -1,7 +1,7 @@
 version: '3.6'
 
 services:
-    myproj_redis:
+    test_redis:
         container_name: myproj_redis
         hostname: redis
         image: redis:latest
@@ -12,7 +12,7 @@ services:
             - "6379"
         restart: always
 
-    myproj_api:
+    fast_api:
         container_name: my_api
         build:
             context: ./
