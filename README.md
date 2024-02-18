@@ -29,17 +29,22 @@ docker compose up 명령어로 해당 환경이 구동되게 만들어 주세요
 ## Milestone: 비동기 작업 큐 구현
 이슈 #1: 환경 설정 및 초기 구성
 * Docker 환경 설정 및 docker-compose 파일 수정
-* requirements.txt 다운 및 환경 Freeze  
-이슈 #2: (uuid v4, 생성 시간) 객체 생성 및 Redis 삽입 기능 구현 
-* api.py 수정 및 worker.py 생성 
-* 객체를 10초 동안 랜덤 시간 간격으로 50개 생성해서 Redis에 삽입하는 로직 구현  
+* requirements.txt 다운 및 환경 Freeze
+
+이슈 #2: (uuid v4, 생성 시간) 객체 생성 및 Redis 삽입 기능 구현
+* api.py 수정 및 worker.py 생성
+* 객체를 10초 동안 랜덤 시간 간격으로 50개 생성해서 Redis에 삽입하는 로직 구현
+
 이슈 #3: Redis에 저장된 객체 삭제 기능 구현
-* Redis에 저장된 객체를 0~10개 사이로 랜덤하게 삭제하는 함수 구현  
+* Redis에 저장된 객체를 0~10개 사이로 랜덤하게 삭제하는 함수 구현
+
 이슈 #4: Redis에 저장된 객체 수 조회 기능 구현
-* Redis에 저장된 객체가 몇 개인지 리턴하는 함수 구현  
+* Redis에 저장된 객체가 몇 개인지 리턴하는 함수 구현
+
 이슈 #5: Redis에 저장된 객체 반환 기능 구현
-* Redis에 저장된 객체를 입력한 값 수 만큼 리턴하는 함수 구현  
-이슈 #6: fast-api의 swagger ui에서 데이터 구조 표현  
+* Redis에 저장된 객체를 입력한 값 수 만큼 리턴하는 함수 구현
+
+이슈 #6: fast-api의 swagger ui에서 데이터 구조 표현
 
 각 이슈에 대한 커밋 메세지는 이슈 번호를 포함하여, 작업 내용을 명확하게 설명할 것. ex. "Docker 설정 및 초기 구성 완료 #1"
 
