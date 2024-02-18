@@ -1,27 +1,30 @@
+# 컨테이너화할 서비스: test_redis, fast_api
+# FastAPI 애플리케이션과 Redis 서버
+
 version: '3.6'
 
 services:
-    test_redis:
+    test_redis:  
         container_name: myproj_redis
         hostname: redis
-        image: redis:latest
+        image: redis:latest # 사용할 이미지를 지정
         command: --port 6379
         ports:
-            - "6379:6379"
+            - "6379:6379" # Redis 서버가 6379 포트에서 실행되도록 설정
         expose:
             - "6379"
-        restart: always
+        restart: always # 컨테이너가 종료되면 항상 재시작하도록 설정
 
     fast_api:
         container_name: my_api
-        build:
-            context: ./
-            dockerfile: ./Dockerfile
+        build: # Docker 이미지를 빌드하기 위한 설정
+            context: ./ # Dockerfile이 위치한 디렉토리
+            dockerfile: ./Dockerfile # Dockerfile의 이름을 지정
         ports:
-        - "5057:5057"
+        - "5057:5057" # 호스트의 5057 포트와 컨테이너의 5057 포트를 연결
         working_dir: /home/myproj
-        volumes:
+        volumes: # 소스 코드 변경사항을 컨테이너에 바로 반영
             - ./:/home/myproj
-        links:
-            - myproj_redis
-        command: uvicorn api:app --host 0.0.0.0 --port 5057 --reload
+        links:  # fast_api 서비스가 시작되기 전에 test_redis 서비스가 먼저 시작되어야 함을 지정
+            - test_redis # myproj_redis에서 test_redis로 변경
+        command: uvicorn api:app --host 0.0.0.0 --port 5057 --reload # api.py에 정의된 FastAPI 애플리케이션을 호스트의 5057 포트에서 실행
