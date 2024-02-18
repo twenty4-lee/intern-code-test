@@ -38,5 +38,10 @@ async def delete_data():
         redis_conn.delete(random_key)
     return {"message": f"{delete_number} items deleted."}
 
+# 3. redis에 저장된 객체가 몇 개인지 리턴하는 함수
+@app.post("/get count/")
+async def get_count():
+    count = len(redis_conn.keys("*"))
+    return {"Number of items": count}
 
 
