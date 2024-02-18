@@ -4,7 +4,8 @@ from redis import Redis
 from rq import Queue
 # FastAPI 애플리케이션과 Redis 초기화
 app = FastAPI()
-
+# redis_conn = Redis 인스턴스에 연결하기 위한 객체, Python 애플리케이션과 Redis 서버 사이의 연결을 관리
+# 이 객체를 통해 데이터를 저장, 조회, 수정, 삭제하는 등의 Redis 작업을 수행
 redis_conn = Redis(host='test_redis', port=6379)
 q = Queue('my_queue', connection=redis_conn) # Redis와 연결하여 RQ 큐 생성 
 
@@ -19,13 +20,23 @@ from datetime import timedelta
 from worker import runTask
 @app.post("/insert/") # 클라이언트에서 FastAPI 엔드포인트 호출
 def insert_data():
-    for i in range(50):
+    for _ in range(50):
         delay = random.uniform(0, 10)
         # RQ를 사용하여 runTask 작업을 랜덤 딜레이 후에 실행하도록 스케줄링
         # RQ worker 프로세스에 의해 비동기적으로 처리
         q.enqueue_in(timedelta(seconds=delay), runTask)
     return {"message": "UUIDs insertion scheduled."}
 
+# 2. Redis에 저장된 객체를 0~10개 사이로 랜덤하게 삭제하는 함수 
+@app.delete("/delete/") # 클라이언트에서 FastAPI 엔드포인트 호출
+async def delete_data():
+    delete_number = random.randint(0,10)
+    for _ in range(delete_number):
+        # random 함수를 통해 임의의 key 획득
+        random_key = redis_conn.randomkey()
+        # 획득된 key의 item 삭제
+        redis_conn.delete(random_key)
+    return {"message": f"{delete_number} items deleted."}
 
 
 
