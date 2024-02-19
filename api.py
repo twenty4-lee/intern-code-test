@@ -71,13 +71,12 @@ async def get_items(item_count: int):
         keys = redis_conn.keys("*")
         keys = [key.decode("utf-8") for key in keys]  # 바이트 문자열을 일반 문자열로 변환
         valid_keys = [key for key in keys if key not in ('rq:scheduled:my_queue', 'rq:queues')]  # 'rq:scheduled:my_queue'와 'rq:queues'를 제외한 유효한 키만 필터링
-        
         items = []
         for key in valid_keys[:item_count]:
             value = redis_conn.hget(key, "created_at")
             if value:
                 items.append(Item(key=key, value=value))  # Pydantic 모델 인스턴스 생성 및 추가
-        
         return items
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
