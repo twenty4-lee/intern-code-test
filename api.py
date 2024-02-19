@@ -44,25 +44,35 @@ async def get_count():
     count = len(redis_conn.keys("*"))
     return {"Number of items": count}
 
+
 #4. Redis에 저장된 객체를 입력한 값 수 만큼 리턴하는 함수
 from typing import List, Dict
-@app.get("/get items/{item_count}", response_model=List[Dict[str, str]])
+
+@app.get("/get_items/{item_count}", response_model=List[Dict[str, str]])
 async def get_items(item_count: int):
+
+
     if item_count < 1:
         raise HTTPException(status_code=400, detail="item_count must be at least 1.")
     try:
-        # Redis에서 모든 키를 조회
         keys = redis_conn.keys("*")
-        if item_count > len(keys):
-            raise HTTPException(status_code=400, detail=f"Requested item_count ({item_count}) exceeds the number of stored items ({len(keys)}).")
-        else:
-            items = []
-            for i in range(item_count):
-                # 각 키에 대한 값을 조회하여 items 리스트에 추가
-                value = redis_conn.hget(keys[i], "created_at") # 'created_at' 필드의 값을 조회
-                if value:
-                    items.append({"key": keys[i], "value": value})
-            return items
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Total keys: {len(keys)}")  # 전체 키의 수 출력
+        # 바이트 문자열을 일반 문자열로 변환
+        keys = [key.decode("utf-8") for key in keys]
+        valid_keys = [key for key in keys if key not in ('rq:scheduled:my_queue', 'rq:queues')] # 'rq:scheduled:my_queue'와 'rq:queues'를 제외한 유효한 키만 필터링
+        print(f"Valid keys: {len(valid_keys)}")  # 필터링된 유효한 키의 수 출력
 
+        if item_count > len(valid_keys):
+            raise HTTPException(status_code=400, detail=f"Requested item_count ({item_count}) exceeds the number of stored items ({len(valid_keys)}).")
+        
+        items = []
+        # 유효한 키를 순회하면서 아이템을 조회
+        for key in valid_keys[:item_count]:
+            value = redis_conn.hget(key, "created_at")  # 'created_at' 필드의 값을 조회
+            if value:
+                items.append({"key": key, "value": value})
+                
+        return items
+    except Exception as e:
+        print(f"Error: {str(e)}")  # 에러 발생 시 에러 메시지 출력
+        raise HTTPException(status_code=500, detail=str(e))
