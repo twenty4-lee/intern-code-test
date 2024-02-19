@@ -38,10 +38,31 @@ async def delete_data():
         redis_conn.delete(random_key)
     return {"message": f"{delete_number} items deleted."}
 
-# 3. redis에 저장된 객체가 몇 개인지 리턴하는 함수
-@app.post("/get count/")
+# 3. Redis에 저장된 객체가 몇 개인지 리턴하는 함수
+@app.get("/get count/")
 async def get_count():
     count = len(redis_conn.keys("*"))
     return {"Number of items": count}
 
+#4. Redis에 저장된 객체를 입력한 값 수 만큼 리턴하는 함수
+from typing import List, Dict
+@app.get("/get items/{item_count}", response_model=List[Dict[str, str]])
+async def get_items(item_count: int):
+    if item_count < 1:
+        raise HTTPException(status_code=400, detail="item_count must be at least 1.")
+    try:
+        # Redis에서 모든 키를 조회
+        keys = redis_conn.keys("*")
+        if item_count > len(keys):
+            raise HTTPException(status_code=400, detail=f"Requested item_count ({item_count}) exceeds the number of stored items ({len(keys)}).")
+        else:
+            items = []
+            for i in range(item_count):
+                # 각 키에 대한 값을 조회하여 items 리스트에 추가
+                value = redis_conn.hget(keys[i], "created_at") # 'created_at' 필드의 값을 조회
+                if value:
+                    items.append({"key": keys[i], "value": value})
+            return items
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
