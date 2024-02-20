@@ -48,3 +48,5 @@ docker compose up 명령어로 해당 환경이 구동되게 만들어 주세요
 
 각 이슈에 대한 커밋 메세지는 이슈 번호를 포함하여, 작업 내용을 명확하게 설명할 것. ex. "Docker 설정 및 초기 구성 완료 #1"
 
+## Notion: 부가적인 설명 제공 
+https://www.notion.so/intern-coding-test-6f5116931e0a4f94b71d133038be50cb?pvs=4
