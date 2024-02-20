@@ -1,3 +1,4 @@
+# worker.py: RQ(Redis Queue)의 작업을 처리하기 위한 워커를 실행하는 스크립트
 from rq import Worker, Queue, Connection
 from redis import Redis
 

@@ -50,14 +50,14 @@ async def delete_data():
     return {"message": f"{delete_number} items deleted."}
 
 # 3. Redis에 저장된 객체가 몇 개인지 리턴하는 함수
-@app.get("/get count/")
+@app.get("/get_count/")
 async def get_count():
     count = len(redis_conn.keys("*"))
     return {"Number of items": count}
 
-
 #4. Redis에 저장된 객체를 입력한 값 수 만큼 리턴하는 함수
 # Pydantic 모델 정의
+# swagger ui에서 데이터 구조를 보기 좋게 표현
 from typing import List
 class Item(BaseModel):
     key: str
@@ -66,17 +66,17 @@ class Item(BaseModel):
 @app.get("/get_items/{item_count}", response_model=List[Item])
 async def get_items(item_count: int):
     if item_count < 1:
-        raise HTTPException(status_code=400, detail="item_count must be at least 1.")
-    try:
-        keys = redis_conn.keys("*")
-        keys = [key.decode("utf-8") for key in keys]  # 바이트 문자열을 일반 문자열로 변환
-        valid_keys = [key for key in keys if key not in ('rq:scheduled:my_queue', 'rq:queues')]  # 'rq:scheduled:my_queue'와 'rq:queues'를 제외한 유효한 키만 필터링
+         raise HTTPException(status_code=400, detail="item_count must be at least 1.")
+    try: 
+        # 랜덤 추출로 변경. 사용자가 요청한 개수보다 실제 키의 개수가 적다면 Redis에 있는 실제 키의 개수만큼만 선택
+        keys = random.sample(redis_conn.keys("*"), min(item_count, len(redis_conn.keys("*"))))
+        keys = [key.decode("utf-8") for key in keys]
         items = []
-        for key in valid_keys[:item_count]:
-            value = redis_conn.hget(key, "created_at")
+        for key in keys:
+            value = redis_conn.get(key)  # 해시가 아닌 일반 값을 가져오기 위해 수정됨
             if value:
-                items.append(Item(key=key, value=value))  # Pydantic 모델 인스턴스 생성 및 추가
-        return items
+                items.append(Item(key=key, value=value.decode("utf-8")))  # 바이트 문자열을 일반 문자열로 변환
+        return items # 리스트 직접 반환
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
