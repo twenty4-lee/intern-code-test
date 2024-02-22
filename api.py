@@ -39,7 +39,7 @@ async def insert_item(background_tasks: BackgroundTasks):
 
 # 2. Redis에 저장된 객체를 0~10개 사이로 랜덤하게 삭제하는 함수 
 @app.delete("/delete/") # 클라이언트에서 FastAPI 엔드포인트 호출
-async def delete_data():
+async def delete_item():
     delete_number = random.randint(0,10)
     for _ in range(delete_number):
         # random 함수를 통해 임의의 key 획득
@@ -55,7 +55,7 @@ async def get_count():
     count = len(redis_conn.keys("*"))
     return {"Number of items": count}
 
-#4. Redis에 저장된 객체를 입력한 값 수 만큼 리턴하는 함수
+# 4. Redis에 저장된 객체를 입력한 값 수 만큼 리턴하는 함수
 # Pydantic 모델 정의
 # swagger ui에서 데이터 구조를 보기 좋게 표현
 from typing import List
@@ -63,8 +63,8 @@ class Item(BaseModel):
     key: str
     value: str
 
-@app.get("/get_items/{item_count}", response_model=List[Item])
-async def get_items(item_count: int):
+@app.get("/get_item/{item_count}", response_model=List[Item])
+async def get_item(item_count: int):
     if item_count < 1:
          raise HTTPException(status_code=400, detail="item_count must be at least 1.")
     try: 
@@ -80,3 +80,19 @@ async def get_items(item_count: int):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+# 추가 목표: Redis에 저장된 특정 키의 값을 업데이트하는 함수
+class UpdateItem(BaseModel):
+    # BaseModel: FastAPI에서 요청 바디의 데이터 구조를 정의하는 데 사용
+    # FastAPI는 클라이언트로부터 받은 JSON 데이터를 Python 객체로 변환하고, 이 객체를 통해 데이터에 접근할 수 있다. 
+    value: str  # 업데이트할 새로운 값
+
+@app.put("/update/{key}")
+async def update_item(key: str, item: UpdateItem):
+    # Redis에 키가 존재하는지 확인
+    if not redis_conn.exists(key):
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    # 새로운 값으로 키 업데이트
+    redis_conn.set(key, item.value)
+    return {"message": "Item updated successfully."}
